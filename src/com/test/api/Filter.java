@@ -91,7 +91,7 @@ public class Filter {
 	}
 
 	/**
-	 * 混合模式：柔光
+	 * 混合模式：柔光  + alpha
 	 * B <= 127
 	 * A = (((2 * B) - 1) * (1 * A - A^2)/1^2 + A) * a / 255 + A * (1 - a) / 1
 	 * 
@@ -134,7 +134,8 @@ public class Filter {
 	}
 	
 	/**
-	 * 混合模式：过滤
+	 * 混合模式：排除
+	 * 公式： A = (B > A) ? (B - A) : (A - B)
 	 * @param src_r
 	 * @param src_g
 	 * @param src_b
@@ -144,13 +145,13 @@ public class Filter {
 	 */
 	private static void Difference(Myshort src_r, Myshort src_g, Myshort src_b,
 			short r, short g, short b) {
-		src_r.value = (short) ((r > src_r.value) ? (r - src_r.value)
-				: (src_r.value - r));
-		src_g.value = (short) ((g > src_g.value) ? (g - src_g.value)
-				: (src_g.value - g));
-		src_b.value = (short) ((b > src_b.value) ? (b - src_b.value)
-				: (src_b.value - b));
+		src_r.value = (short) ((r > src_r.value) ? (r - src_r.value): (src_r.value - r));
+		src_g.value = (short) ((g > src_g.value) ? (g - src_g.value): (src_g.value - g));
+		src_b.value = (short) ((b > src_b.value) ? (b - src_b.value): (src_b.value - b));
 	}
+	
+	
+	
 
 	// ==========================================================================================
 	
@@ -216,7 +217,7 @@ public class Filter {
 	 * 
 	 * @param src：原图
 	 * @param des：
-	 * @param mask：混合面板图
+	 * @param mask：图层或者蒙版
 	 * @param width
 	 * @param height
 	 * @param mask_width
@@ -225,9 +226,6 @@ public class Filter {
 	public static void filter_sunshine(int[] src, int[] des, int[] mask,
 			int width, int height, int mask_width, int mask_height) {
 		//degree取值范围在[-100 , 100]
-		
-		double contrast = (100.0 + 52) / 100.0;
-		contrast *= contrast;
 
 		int size = width * height;
 		Myshort dr = new Myshort(), dg = new Myshort(), db = new Myshort(), alpha = new Myshort();
@@ -244,6 +242,7 @@ public class Filter {
 			gg = (((dg.value / 255.0 - 0.5) * ((100.0 + 52) / 100.0) * ((100.0 + 52) / 100.0) + 0.5) * 255);
 			bb = (((db.value / 255.0 - 0.5) * ((100.0 + 52) / 100.0) * ((100.0 + 52) / 100.0) + 0.5) * 255);
 			
+			//检测每个像素的rgb的临界值
 			if (rr < 0.0)
 				rr = 0;
 			if (rr > 255.0)
@@ -256,6 +255,7 @@ public class Filter {
 				bb = 0;
 			if (bb > 255.0)
 				bb = 255;
+			
 			dr.value = (short) rr;
 			dg.value = (short) gg;
 			db.value = (short) bb;
@@ -273,15 +273,15 @@ public class Filter {
 				g.value = (short) Color.green(des[pos]);
 				b.value = (short) Color.blue(des[pos]);
 
-				//在柔光模式下进行混合
+				//在柔光模式下进行叠加或者混合(rgb:255, 255, 255)
 				SoftLight(r, g, b, (short) 255, (short) 255, (short) 255);
-				//在绿光 + Alpha 模式下进行混合
+				//在绿光 + Alpha 模式下进行叠加或者混合(rgba: 143, 27, 147,94)
 				Screen(r, g, b, (short) 143, (short) 27, (short) 147,
 						(short) 94);
-				//在柔光 + Alpha 模式进行混合
+				//在柔光 + Alpha 模式进行叠加或者混合(rgba:199,169,31,102)
 				SoftLight(r, g, b, (short) 199, (short) 169, (short) 31,
 						(short) 102);
-				//在图像区域中，添加图层或者面板
+				//在底片区域中，添加图层或者蒙版
 				if (x < mask_width && y < mask_height) {
 
 					int temp = y * mask_width + x;
@@ -289,12 +289,12 @@ public class Filter {
 					mask_g = (short) Color.green(mask[temp]);
 					mask_b = (short) Color.blue(mask[temp]);
 
+					//在绿光模式下进行叠加或者混合
 					Screen(r, g, b, mask_r, mask_g, mask_b);
 					Screen(r, g, b, mask_r, mask_g, mask_b);
 				}
 
-				des[pos] = Color.argb((short) Color.alpha(des[pos]), r.value,
-						g.value, b.value);
+				des[pos] = Color.argb((short) Color.alpha(des[pos]), r.value, g.value, b.value);
 			}
 		}
 	}
