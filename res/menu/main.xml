@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.test.MainActivity" >
+
+    <item
+        android:id="@+id/action_copy"
+        android:title="复制"/>
+    <item
+        android:id="@+id/action_cut"
+        android:title="剪切"/>
+    <item
+        android:id="@+id/action_discard"
+        android:title="删除"/>
+    <item
+        android:id="@+id/action_edit"
+        android:title="编辑"/>
+    <item
+        android:id="@+id/action_email"
+        android:title="邮箱"/>
+
+</menu>

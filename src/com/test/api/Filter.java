@@ -3,156 +3,6 @@ import android.graphics.Color;
 
 public class Filter {
 
-	private static class Myshort {
-		public short value;
-	}
-	
-	/**
-	 * 混合模式为：绿色 
-	 * 公式：A = 1-(1-A)*(1-B)
-	 * @param src_r
-	 * @param src_g
-	 * @param src_b
-	 * @param r
-	 * @param g
-	 * @param b
-	 */
-	private static void Screen(Myshort src_r, Myshort src_g, Myshort src_b,
-			short r, short g, short b) {
-		src_r.value = (short) (255 - (((255 - src_r.value) * (255 - r)) >> 8));
-		src_g.value = (short) (255 - (((255 - src_g.value) * (255 - g)) >> 8));
-		src_b.value = (short) (255 - (((255 - src_b.value) * (255 - b)) >> 8));
-	}
-
-	/**
-	 * 混合模式：绿色 + alpha
-	 * 公式：A = (1-((1-A)*(1-B) / 2^8)) * a / 1 + A * (1 - a) / 1
-	 * @param src_r
-	 * @param src_g
-	 * @param src_b
-	 * @param r
-	 * @param g
-	 * @param b
-	 * @param alpha
-	 */
-	private static void Screen(Myshort src_r, Myshort src_g, Myshort src_b,
-			short r, short g, short b, short alpha) {
-		short rVal, gVal, bVal;
-
-		rVal = (short) (255 - (((255 - src_r.value) * (255 - r)) >> 8));
-		gVal = (short) (255 - (((255 - src_g.value) * (255 - g)) >> 8));
-		bVal = (short) (255 - (((255 - src_b.value) * (255 - b)) >> 8));
-		
-		src_r.value = (short) (rVal * alpha / 255 + src_r.value * (255 - alpha) / 255);
-		src_g.value = (short) (gVal * alpha / 255 + src_g.value * (255 - alpha) / 255);
-		src_b.value = (short) (bVal * alpha / 255 + src_b.value * (255 - alpha) / 255);
-	}
-
-
-	/**
-	 * 混合模式：柔光
-	 * B <= 127
-	 * A = (((2 * B) - 1) * (1 * A - A^2)/1^2 + A)
-	 * B > 127
-	 * A = ((2 * B) - 1) * (sqrt(1) * sqrt(A) - A) / 1 + A
-	 * @param src_r 原
-	 * @param src_g
-	 * @param src_b
-	 * @param r
-	 * @param g
-	 * @param b
-	 */
-	private static void SoftLight(
-			Myshort src_r, 
-			Myshort src_g, 
-			Myshort src_b,
-			short r, 
-			short g, 
-			short b) {
-		
-		if (r <= 127) {
-			src_r.value = (short) ((2 * r - 255) * (255 * src_r.value - src_r.value^2) / 255^2 + src_r.value);
-		} else {
-			src_r.value =  (short) ((2 * r - 255) * (Math.sqrt(255.0) * Math.sqrt((double)src_r.value) - src_r.value) / 255 + src_r.value);
-		}
-		
-		if (g <= 127) {
-			src_g.value = (short) ((2 * g - 255) * (255 * src_g.value - src_g.value^2) / 255^2 + src_g.value);
-		} else {
-			src_g.value =  (short) ((2 * g - 255) * (Math.sqrt(255.0) * Math.sqrt((double)src_g.value) - src_g.value) / 255 + src_g.value);
-		}
-		
-		if (b <= 127) {
-			src_b.value = (short) ((2 * b - 255) * (255 * src_b.value - src_b.value^2) / 255^2 + src_b.value);
-		} else {
-			src_b.value =  (short) ((2 * b - 255) * (Math.sqrt(255.0) * Math.sqrt((double)src_b.value) - src_b.value) / 255 + src_b.value);
-		}
-
-	}
-
-	/**
-	 * 混合模式：柔光  + alpha
-	 * B <= 127
-	 * A = (((2 * B) - 1) * (1 * A - A^2)/1^2 + A) * a / 255 + A * (1 - a) / 1
-	 * 
-	 * B > 127
-	 * A = (((2 * B) - 1) * (sqrt(1) * sqrt(A) - A) / 1 + A) * a / 255 + A * (1 - a) / 1
-	 * 
-	 * @param src_r
-	 * @param src_g
-	 * @param src_b
-	 * @param r
-	 * @param g
-	 * @param b
-	 * @param alpha
-	 */
-	private static void SoftLight(Myshort src_r, Myshort src_g, Myshort src_b,
-			short r, short g, short b, short alpha) {
-		short rVal, gVal, bVal;
-
-		if (r <= 127) {
-			rVal = (short) ((2 * r - 255) * (255 * src_r.value - src_r.value^2) / 255^2 + src_r.value);
-		} else {
-			rVal =  (short) ((2 * r - 255) * (Math.sqrt(255.0) * Math.sqrt((double)src_r.value) - src_r.value) / 255 + src_r.value);
-		}
-		
-		if (g <= 127) {
-			gVal = (short) ((2 * g - 255) * (255 * src_g.value - src_g.value^2) / 255^2 + src_g.value);
-		} else {
-			gVal =  (short) ((2 * g - 255) * (Math.sqrt(255.0) * Math.sqrt((double)src_g.value) - src_g.value) / 255 + src_g.value);
-		}
-		
-		if (b <= 127) {
-			bVal = (short) ((2 * b - 255) * (255 * src_b.value - src_b.value^2) / 255^2 + src_b.value);
-		} else {
-			bVal =  (short) ((2 * b - 255) * (Math.sqrt(255.0) * Math.sqrt((double)src_b.value) - src_b.value) / 255 + src_b.value);
-		}
-		
-		src_r.value = (short) (rVal * alpha / 255 + src_r.value * (255 - alpha) / 255);
-		src_g.value = (short) (gVal * alpha / 255 + src_g.value * (255 - alpha) / 255);
-		src_b.value = (short) (bVal * alpha / 255 + src_b.value * (255 - alpha) / 255);
-	}
-	
-	/**
-	 * 混合模式：排除
-	 * 公式： A = (B > A) ? (B - A) : (A - B)
-	 * @param src_r
-	 * @param src_g
-	 * @param src_b
-	 * @param r
-	 * @param g
-	 * @param b
-	 */
-	private static void Difference(Myshort src_r, Myshort src_g, Myshort src_b,
-			short r, short g, short b) {
-		src_r.value = (short) ((r > src_r.value) ? (r - src_r.value): (src_r.value - r));
-		src_g.value = (short) ((g > src_g.value) ? (g - src_g.value): (src_g.value - g));
-		src_b.value = (short) ((b > src_b.value) ? (b - src_b.value): (src_b.value - b));
-	}
-	
-	
-	
-
 	// ==========================================================================================
 	
 	// 黑白效果 
@@ -198,12 +48,12 @@ public class Filter {
 			b.value = b_tmp.value = (short) Color.blue(src[nIndexSrc]);
 
 			// L1 复制底片，在复制的底片上叠加qx_01.png(RGBA:50,0,255,100%)，混合模式设置为排除
-			Difference(r_tmp, g_tmp, b_tmp, (short) 50, (short) 0, (short) 255);
+			MixedMode.Difference(r_tmp, g_tmp, b_tmp, (short) 50, (short) 0, (short) 255);
 			// L2 把第一步的结果叠加在底片上，混合模式设置为柔光
-			SoftLight(r, g, b, (short) r_tmp.value, (short) g_tmp.value,
+			MixedMode.SoftLight(r, g, b, (short) r_tmp.value, (short) g_tmp.value,
 					(short) b_tmp.value);
 			// L3 叠加qx_02.png(RGBA:251,255,217,100%)，混合模式设置为柔光
-			SoftLight(r, g, b, (short) 251, (short) 255, (short) 217);
+			MixedMode.SoftLight(r, g, b, (short) 251, (short) 255, (short) 217);
 
 			des[nIndexDes] = Color.argb((short) Color.alpha(src[nIndexSrc]),
 					r.value, g.value, b.value);
@@ -274,12 +124,12 @@ public class Filter {
 				b.value = (short) Color.blue(des[pos]);
 
 				//在柔光模式下进行叠加或者混合(rgb:255, 255, 255)
-				SoftLight(r, g, b, (short) 255, (short) 255, (short) 255);
+				MixedMode.SoftLight(r, g, b, (short) 255, (short) 255, (short) 255);
 				//在绿光 + Alpha 模式下进行叠加或者混合(rgba: 143, 27, 147,94)
-				Screen(r, g, b, (short) 143, (short) 27, (short) 147,
+				MixedMode.Screen(r, g, b, (short) 143, (short) 27, (short) 147,
 						(short) 94);
 				//在柔光 + Alpha 模式进行叠加或者混合(rgba:199,169,31,102)
-				SoftLight(r, g, b, (short) 199, (short) 169, (short) 31,
+				MixedMode.SoftLight(r, g, b, (short) 199, (short) 169, (short) 31,
 						(short) 102);
 				//在底片区域中，添加图层或者蒙版
 				if (x < mask_width && y < mask_height) {
@@ -290,8 +140,8 @@ public class Filter {
 					mask_b = (short) Color.blue(mask[temp]);
 
 					//在绿光模式下进行叠加或者混合
-					Screen(r, g, b, mask_r, mask_g, mask_b);
-					Screen(r, g, b, mask_r, mask_g, mask_b);
+					MixedMode.Screen(r, g, b, mask_r, mask_g, mask_b);
+					MixedMode.Screen(r, g, b, mask_r, mask_g, mask_b);
 				}
 
 				des[pos] = Color.argb((short) Color.alpha(des[pos]), r.value, g.value, b.value);
