@@ -28,40 +28,6 @@ public class Filter {
 			nIndexDes++;
 		}
 	}
-	// 清新 pass
-	/*
-	 * 1. 复制底片，在复制的底片上叠加qx_01.png(RGBA:50,0,255,100%)，混合模式设置为排除
-	 * 2. 把第一步的结果叠加在底片上，混合模式设置为柔光 
-	 * 3. 叠加qx_02.png(RGBA:251,255,217,100%)，混合模式设置为柔光
-	 */
-	public static void filter_fresh(int[] src, int[] des, int width, int height) {
-
-		Myshort r = new Myshort(), g = new Myshort(), b = new Myshort(), r_tmp = new Myshort(), g_tmp = new Myshort(), b_tmp = new Myshort();
-		int size = width * height;
-
-		int nIndexSrc = 0;
-		int nIndexDes = 0;
-		for (int i = 0; i < size; i++) {
-
-			r.value = r_tmp.value = (short) Color.red(src[nIndexSrc]);
-			g.value = g_tmp.value = (short) Color.green(src[nIndexSrc]);
-			b.value = b_tmp.value = (short) Color.blue(src[nIndexSrc]);
-
-			// L1 复制底片，在复制的底片上叠加qx_01.png(RGBA:50,0,255,100%)，混合模式设置为排除
-			MixedMode.Difference(r_tmp, g_tmp, b_tmp, (short) 50, (short) 0, (short) 255);
-			// L2 把第一步的结果叠加在底片上，混合模式设置为柔光
-			MixedMode.SoftLight(r, g, b, (short) r_tmp.value, (short) g_tmp.value,
-					(short) b_tmp.value);
-			// L3 叠加qx_02.png(RGBA:251,255,217,100%)，混合模式设置为柔光
-			MixedMode.SoftLight(r, g, b, (short) 251, (short) 255, (short) 217);
-
-			des[nIndexDes] = Color.argb((short) Color.alpha(src[nIndexSrc]),
-					r.value, g.value, b.value);
-			nIndexSrc++;
-			nIndexDes++;
-		}
-	}
-	
 	// 阳光
 	/**
 	 * 
@@ -124,13 +90,12 @@ public class Filter {
 				b.value = (short) Color.blue(des[pos]);
 
 				//在柔光模式下进行叠加或者混合(rgb:255, 255, 255)
-				MixedMode.SoftLight(r, g, b, (short) 255, (short) 255, (short) 255);
+				MixedMode.soft_light(r, g, b, (short) 255, (short) 255, (short) 255);
 				//在绿光 + Alpha 模式下进行叠加或者混合(rgba: 143, 27, 147,94)
-				MixedMode.Screen(r, g, b, (short) 143, (short) 27, (short) 147,
+				MixedMode.sreen_alpha(r, g, b, (short) 143, (short) 27, (short) 147,
 						(short) 94);
-				//在柔光 + Alpha 模式进行叠加或者混合(rgba:199,169,31,102)
-				MixedMode.SoftLight(r, g, b, (short) 199, (short) 169, (short) 31,
-						(short) 102);
+				//在柔光 + Alpha 模式进行叠加或者混合(rgba:199,169,31,102) 
+				MixedMode.soft_light_alpha_2(r, g, b, (short) 199, (short) 169, (short) 31,(short) 102);
 				//在底片区域中，添加图层或者蒙版
 				if (x < mask_width && y < mask_height) {
 
@@ -140,8 +105,8 @@ public class Filter {
 					mask_b = (short) Color.blue(mask[temp]);
 
 					//在绿光模式下进行叠加或者混合
-					MixedMode.Screen(r, g, b, mask_r, mask_g, mask_b);
-					MixedMode.Screen(r, g, b, mask_r, mask_g, mask_b);
+					MixedMode.screen(r, g, b, mask_r, mask_g, mask_b);
+					MixedMode.screen(r, g, b, mask_r, mask_g, mask_b);
 				}
 
 				des[pos] = Color.argb((short) Color.alpha(des[pos]), r.value, g.value, b.value);
